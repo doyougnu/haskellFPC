@@ -1,0 +1,70 @@
+name:                fpc
+version:             0.1.0.0
+github:              "githubuser/fpc"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2018 Author name here"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/fpc#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- text
+- mtl
+- containers
+- bifunctors
+- process
+- filepath
+- directory
+
+default-extensions:
+  - NamedFieldPuns
+  - OverloadedStrings
+  - FlexibleContexts
+  - DeriveFunctor
+  - DeriveGeneric
+  - BangPatterns
+  - GeneralizedNewtypeDeriving
+  - DeriveTraversable
+  - FlexibleInstances
+  - DeriveDataTypeable
+  - MultiParamTypeClasses
+  - FunctionalDependencies
+  - RecordWildCards
+
+library:
+  source-dirs: src
+
+executables:
+  fpc-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - fpc
+
+tests:
+  fpc-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - fpc
