@@ -75,27 +75,60 @@ test3 = do inc
            inc
            return 5
 
+
+stateLoop :: a -> MyState a
+stateLoop x = do st <- get
+                 inc'
+                 if st >= 10
+                 then return x
+                 else stateLoop x
+
+stateLoop2 :: a -> MyState a
+stateLoop2 x = do st <- get
+                  if st >= 10
+                    then return x
+                    else do inc'
+                            stateLoop2 x
+
 -- Lets rewrite this with a state monad like so
+type BadEnv a = State (Env DVal) (Maybe a)
 type Env' a = StateT (Env DVal) Maybe a
 -- type Env' a b = StateT (Env DVal) (Either a) b
 -- type T b = Env' String  b
 -- type Env' a = StateT (Env DVal) Maybe a
 
+-- dsem'' :: Exp -> BadEnv DVal
+-- dsem'' (Lit i) = return . Just $ DI i
+-- dsem'' (Add l r) = do (Just (DI l'')) <- dsem'' l
+--                       (Just (DI r'')) <- dsem'' r
+--                       return . Just . DI $ l'' + r''
+-- dsem'' (Let x b e) = do -- st <- get
+--                        res <- dsem'' b
+--                        modify $ M.insert x res
+--                        -- put $ M.insert x res st
+--                        dsem'' e
+-- dsem'' (Ref x) = do st <- get
+--                     lift $ M.lookup x st
+-- dsem'' (Fun x e)   = return $ (DF x e)
+-- dsem'' (App l r)   = do st <- get
+--                         (DF x e) <- dsem'' l
+--                         v <- dsem'' r
+--                         modify $ M.insert x v
+--                         dsem'' e
+
 dsem' :: Exp -> Env' DVal
 dsem' (Lit i) = return $ DI i
-dsem' (Add l r) = do (DI l') <- dsem' l
-                     (DI r') <- dsem' r
+dsem' (Add l r) = do DI l' <- dsem' l
+                     DI r' <- dsem' r
                      return . DI $ l' + r'
-dsem' (Let x b e) = do -- st <- get
-                       res <- dsem' b
+dsem' (Let x b e) = do res <- dsem' b
                        modify $ M.insert x res
-                       -- put $ M.insert x res st
                        dsem' e
 dsem' (Ref x) = do st <- get
                    lift $ M.lookup x st
-dsem' (Fun x e)   = return $ (DF x e)
+dsem' (Fun x e)   = return $ DF x e
 dsem' (App l r)   = do st <- get
-                       (DF x e) <- dsem' l
+                       DF x e <- dsem' l
                        v <- dsem' r
                        modify $ M.insert x v
                        dsem' e
